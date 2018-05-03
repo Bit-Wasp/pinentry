@@ -18,9 +18,6 @@ pretest:
 phpunit-ci-unit: pretest
 		php vendor/bin/phpunit -c phpunit.xml --coverage-text --coverage-clover=build/coverage.clover
 
-phpunit-ci-integration: pretest
-		php vendor/bin/phpunit -c phpunit.device.xml --coverage-text --coverage-clover=build/coverage.clover
-
 ocular:
 		if [ ! -f ocular.phar ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
 

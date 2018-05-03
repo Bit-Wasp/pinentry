@@ -18,21 +18,20 @@ class PinEntry
         ProcessInterface $process
     ) {
         $msg = $process->waitFor("OK");
-
         if ($msg !== "OK Pleased to meet you\n") {
-            throw new PinEntryException("Unexpected start of pinnetry protocol");
+            throw new PinEntryException("First message from pinentry did not match expected value");
         }
         $this->process = $process;
     }
 
     public function getInfo(string $type): string
     {
-        $this->process->send("GETINFO {$type}\n");
+        $this->process->send(Command::GETINFO . " {$type}\n");
         $msg = $this->process->waitFor("D");
         return $msg;
     }
 
-    public function getPin(Request $request): string
+    public function getPin(PinRequest $request): string
     {
         foreach ($request->getCommands() as $command => $param) {
             $this->process->send("{$command} {$param}\n");
@@ -40,11 +39,11 @@ class PinEntry
         }
 
         foreach ($request->getOptions() as $option => $value) {
-            $this->process->send("OPTION {$option} {$value}\n");
+            $this->process->send(Command::OPTION . " {$option} {$value}\n");
             $this->process->waitFor("OK");
         }
 
-        $this->process->send("GETPIN\n");
+        $this->process->send(Command::GETPIN . "\n");
         $msg = $this->process->waitFor("D");
         return $msg;
     }

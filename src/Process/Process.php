@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace BitWasp\PinEntry\Process;
 
-use BitWasp\PinEntry\Exception\PinEntryException;
-use BitWasp\PinEntry\Exception\RemotePinEntryException;
-use Exception\UnexpectedResponseException;
+use BitWasp\PinEntry\Exception;
 use GuzzleHttp\Stream\Stream;
 
 class Process implements ProcessInterface
@@ -64,7 +62,7 @@ class Process implements ProcessInterface
     ) {
         $process = proc_open($executable, self::buildDescriptors($overrideDescriptors), $pipes);
         if (!is_resource($process)) {
-            throw new PinEntryException("Failed to start pinentry");
+            throw new Exception\PinEntryException("Failed to start pinentry");
         }
 
         stream_set_blocking($pipes[1], false);
@@ -115,9 +113,9 @@ class Process implements ProcessInterface
             } else {
                 if (substr($msg, 0, 3) === "ERR") {
                     list (, $code, $error) = explode(" ", $msg, 3);
-                    throw new RemotePinEntryException($error, (int) $code);
+                    throw new Exception\RemotePinEntryException($error, (int) $code);
                 }
-                throw new UnexpectedResponseException($msg);
+                throw new Exception\UnexpectedResponseException($msg);
             }
         }
     }

@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Exception;
-
-use BitWasp\PinEntry\Exception\RemotePinEntryException;
+namespace BitWasp\PinEntry\Exception;
 
 class UnexpectedResponseException extends RemotePinEntryException
 {
