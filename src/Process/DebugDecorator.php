@@ -18,7 +18,7 @@ class DebugDecorator implements ProcessInterface
 
     public function close(): bool
     {
-        echo sprintf("%s(%s)\n", __METHOD__);
+        echo sprintf("%s()\n", __METHOD__);
         return $this->process->close();
     }
 

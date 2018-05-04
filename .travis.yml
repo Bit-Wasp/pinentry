@@ -1,0 +1,38 @@
+language: php
+dist: trusty
+php:
+ - 7.0
+ - 7.1
+ - 7.2
+ - nightly
+
+branches:
+  only:
+    - "master"
+
+env:
+  matrix:
+    - PHPUNIT=true
+
+matrix:
+  exclude:
+    - php: 7.2
+      env: PHPUNIT=true
+  include:
+    - php: 7.2
+      env: PHPUNIT=true COVERAGE=true CODE_STYLE=true
+
+install:
+ - composer install
+
+before_script:
+ - if [ "${COVERAGE}" != "true" ] && [ "$TRAVIS_PHP_VERSION" != "hhvm" ] && [ "$TRAVIS_PHP_VERSION" != "nightly" ]; then phpenv config-rm xdebug.ini && echo "xdebug disabled"; fi
+
+script:
+ - make phpunit-ci-unit
+ - if [ "$CODE_STYLE" = "true" ]; then make phpcs && echo "Code style OK"; fi
+ - if [ "$CODE_STYLE" = "true" ]; then vendor/bin/phpstan analyze -l 7 src && echo "Static analysis OK"; fi
+ - if [ "$CODE_STYLE" = "true" ]; then vendor/bin/infection --min-msi=44 --min-covered-msi=70 && echo "Mutation analysis OK"; fi
+
+after_success:
+- if [ "${COVERAGE}" = "true" ] ; then make scrutinizer; fi

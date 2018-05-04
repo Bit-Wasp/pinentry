@@ -20,22 +20,7 @@ class Command
     const SETQUALITYBAR = 'SETQUALITYBAR';
     const SETQUALITYBAR_TT = 'SETQUALITYBAR_TT';
 
-    private $cmd;
-    private $param;
-
-    public function __construct(string $command, $param)
-    {
-        $this->cmd = $command;
-        $this->param = $param;
-    }
-
-    public function getCommand(): string
-    {
-        return $this->cmd;
-    }
-
-    public function getParam()
-    {
-        return $this->param;
-    }
+    const OPTION = 'OPTIONS';
+    const GETPIN = 'GETPIN';
+    const GETINFO = 'GETINFO';
 }

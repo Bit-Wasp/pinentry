@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BitWasp\PinEntry;
 
-class Request
+class PinRequest
 {
     /**
      * @var string[]|int[]
