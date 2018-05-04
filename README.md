@@ -1,5 +1,5 @@
 pinentry
-========
+=========
 
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Bit-Wasp/pinentry/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Bit-Wasp/pinentry/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/Bit-Wasp/pinentry/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Bit-Wasp/pinentry/?branch=master)
