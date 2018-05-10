@@ -158,24 +158,4 @@ class RequestTest extends TestCase
         $this->assertArrayHasKey("SETTITLE", $commands);
         $this->assertArrayHasKey("SETDESC", $commands);
     }
-    public function testWithUsePasswordCacheOption()
-    {
-        $prompt = "123123123";
-        $option = 'allow-external-password-cache';
-
-        $this->assertFalse($this->request->hasOption($option));
-        $this->assertNull($this->request->getOption($option));
-
-        $this->request->withOption($option, $prompt);
-        $this->assertTrue($this->request->hasOption($option));
-        $this->assertEquals($prompt, $this->request->getOption($option));
-    }
-    public function testGetOptions()
-    {
-        $option1 = 'allow-external-password-cache';
-
-        $this->request->withOption($option1, "");
-        $options = $this->request->getOptions();
-        $this->assertArrayHasKey($option1, $options);
-    }
 }

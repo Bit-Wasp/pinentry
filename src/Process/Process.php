@@ -5,21 +5,29 @@ declare(strict_types=1);
 namespace BitWasp\PinEntry\Process;
 
 use BitWasp\PinEntry\Exception;
-use GuzzleHttp\Stream\Stream;
+use BitWasp\PinEntry\Response;
 
 class Process implements ProcessInterface
 {
     /**
+     * Contains a default file descriptor definitions
+     * for the STDIN, STDOUT, STDERR streams.
      * @var array
      */
     protected static $defaultDescriptor = [
-        0 => ["pipe", "r"], // STDIN pipe the child will read from
-        1 => ["pipe", "w"], // STDOUT pipe the child will write to
-        2 => ["pipe", "w"], // STDERR pipe the child to write to
+        // Define the STDIN pipe the child will read from
+        0 => ["pipe", "r"],
+
+        // Define the STDOUT pipe the child will write to
+        1 => ["pipe", "w"],
+
+        // Define the STDERR pipe the child will write to. Can also
+        // specify a file instead of writing to this process.
+        2 => ["pipe", "w"],
     ];
 
     /**
-     * @var resource
+     * @var resource A 'process' resource
      */
     private $process;
 
@@ -29,32 +37,14 @@ class Process implements ProcessInterface
     private $running = true;
 
     /**
-     * @var Stream
+     * @var resource A 'stream' resource
      */
     private $stdout;
 
     /**
-     * @var Stream
+     * @var resource A 'stream' resource
      */
     private $stdin;
-
-    /**
-     * Return the default descriptors values, overloaded with
-     * the value in $overrideDescriptors if the same key is set there.
-     *
-     * @param array[] $overrideDescriptors
-     * @return array[]
-     */
-    public static function buildDescriptors(array $overrideDescriptors = []): array
-    {
-        $descriptor = static::$defaultDescriptor;
-        foreach (array_keys($descriptor) as $key) {
-            if (array_key_exists($key, $overrideDescriptors)) {
-                $descriptor[$key] = $overrideDescriptors[$key];
-            }
-        }
-        return $descriptor;
-    }
 
     public function __construct(
         string $executable,
@@ -68,19 +58,8 @@ class Process implements ProcessInterface
         stream_set_blocking($pipes[1], false);
 
         $this->process = $process;
-        $this->stdin = Stream::factory($pipes[0]);
-        $this->stdout = Stream::factory($pipes[1]);
-    }
-
-    /**
-     * Called during shutdown routine. Per documentation,
-     * file handles should be closed before we call proc_close
-     */
-    private function stopRunning()
-    {
-        $this->stdin->close();
-        $this->stdout->close();
-        proc_close($this->process);
+        $this->stdin = $pipes[0];
+        $this->stdout = $pipes[1];
     }
 
     public function __destruct()
@@ -96,32 +75,94 @@ class Process implements ProcessInterface
         return true;
     }
 
-    public function send(string $data)
+    /**
+     * Called during shutdown routine. Per documentation,
+     * file handles should be closed before we call proc_close
+     */
+    private function stopRunning()
     {
-        return $this->stdin->write($data);
+        fclose($this->stdin);
+        fclose($this->stdout);
+        proc_close($this->process);
     }
 
-    public function waitFor(string $text)
+    public function send(string $data)
     {
-        $textLen = strlen($text);
-        for (;;) {
-            $msg = $this->recv();
-            if ("" === $msg) {
-                usleep(1000);
-            } else if (substr($msg, 0, $textLen) === $text) {
-                return $msg;
-            } else {
-                if (substr($msg, 0, 3) === "ERR") {
-                    list (, $code, $error) = explode(" ", $msg, 3);
-                    throw new Exception\RemotePinEntryException($error, (int) $code);
-                }
-                throw new Exception\UnexpectedResponseException($msg);
-            }
+        if (fwrite($this->stdin, $data) === false) {
+            throw new \RuntimeException("Failed to write to process stdin");
         }
     }
 
-    public function recv(): string
+    private function awaitResponse(): string
     {
-        return $this->stdout->getContents();
+        $rx = [$this->stdout];
+        $wx = [];
+        $ex = [];
+        // This will pause execution until the stream changes state,
+        // most likely indicating it is ready to be read.
+        if (false === stream_select($rx, $wx, $ex, null, 0)) {
+            throw new \RuntimeException("stream_select failed");
+        }
+
+        // maybe we should inspect $rx to see what the new status is before reading
+
+        $buffer = stream_get_contents($this->stdout);
+        assert($buffer !== "");
+
+        return $buffer;
     }
+
+    public function recv(): Response
+    {
+        $data = [];
+        $statuses = [];
+        $comments = [];
+        $okMsg = null;
+
+        for (;;) {
+            $buffer = $this->awaitResponse();
+            foreach (explode("\n", $buffer) as $piece) {
+                if (substr($piece, 0, 4) === "ERR ") {
+                    $c = explode(" ", $piece, 3);
+                    // don't change state, it's only a single line
+                    throw new Exception\RemotePinEntryException($c[2], (int)$c[1]);
+                }
+
+                $prefix = substr($piece, 0, 2);
+                if ($prefix === "D ") {
+                    $data[] = substr($piece, 2);
+                } else if ($prefix === "S ") {
+                    $statuses[] = substr($piece, 2);
+                } else if ($prefix === "# ") {
+                    // don't change state, it's only a single line
+                    $comments[] = substr($piece, 2);
+                } else if ($prefix === "OK") {
+                    if (strlen($piece) > 2) {
+                        $okMsg = substr($piece, 3);
+                    }
+                    break 2;
+                }
+            }
+        }
+
+        return new Response($data, $statuses, $comments, $okMsg);
+    }
+
+
+    /**
+     * Return the default descriptors values, overloaded with
+     * the value in $overrideDescriptors if the same key is set there.
+     *
+     * @param array[] $overrideDescriptors
+     * @return array[]
+     */
+    public static function buildDescriptors(array $overrideDescriptors = []): array
+    {
+        $descriptor = static::$defaultDescriptor;
+        foreach (array_intersect_key($descriptor, $overrideDescriptors) as $key => $value) {
+            $descriptor[$key] = $overrideDescriptors[$key];
+        }
+        return $descriptor;
+    }
+
 }

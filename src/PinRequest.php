@@ -7,41 +7,10 @@ namespace BitWasp\PinEntry;
 class PinRequest
 {
     /**
+     * keyed by the command, here we store a command => param map
      * @var string[]|int[]
      */
     private $commands = [];
-
-    /**
-     * @var string[]|int[]
-     */
-    private $options = [];
-
-    public function withOption(string $key, $value)
-    {
-        $this->options[$key] = $value;
-        return $this;
-    }
-
-    public function hasOption(string $key): bool
-    {
-        return array_key_exists($key, $this->options);
-    }
-
-    public function getOption(string $key)
-    {
-        if ($this->hasOption($key)) {
-            return $this->options[$key];
-        }
-        return null;
-    }
-
-    /**
-     * @return string[]|int[]
-     */
-    public function getOptions(): array
-    {
-        return $this->options;
-    }
 
     /**
      * @return string[]|int[]
@@ -133,10 +102,6 @@ class PinRequest
         return $this->getCommand(Command::SETREPEAT);
     }
 
-    /**
-     * @param string $repeatError
-     * @return $this
-     */
     public function withRepeatError(string $repeatError)
     {
         $this->withCommand(Command::SETREPEATERROR, $repeatError);

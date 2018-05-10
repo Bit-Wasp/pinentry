@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BitWasp\PinEntry\Process;
 
+use BitWasp\PinEntry\Response;
+
 class DebugDecorator implements ProcessInterface
 {
     /**
@@ -22,17 +24,10 @@ class DebugDecorator implements ProcessInterface
         return $this->process->close();
     }
 
-    public function recv(): string
+    public function recv(): Response
     {
+        echo sprintf("%s()\n", __METHOD__);
         $recv = $this->process->recv();
-        return $recv;
-    }
-
-    public function waitFor(string $text)
-    {
-        echo sprintf("%s(%s)\n", __METHOD__, trim($text));
-        $recv = $this->process->waitFor($text);
-        echo sprintf("%s(%s) received\n%s\n", __METHOD__, trim($text), $recv);
         return $recv;
     }
 
