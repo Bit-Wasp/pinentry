@@ -10,6 +10,11 @@ use BitWasp\PinEntry\Response;
 
 class Assuan
 {
+    /**
+     * @param ProcessInterface $process
+     * @return Response
+     * @throws RemotePinEntryException
+     */
     public function parseResponse(ProcessInterface $process): Response
     {
         $data = [];
@@ -46,6 +51,11 @@ class Assuan
         return new Response($data, $statuses, $comments, $okMsg);
     }
 
+    /**
+     * @param ProcessInterface $process
+     * @param string $command
+     * @param string|null $params
+     */
     public function send(ProcessInterface $process, string $command, string $params = null)
     {
         $process->send(sprintf("%s%s\n", $command, $params ? " {$params}" : ""));
