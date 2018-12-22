@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace BitWasp\PinEntry\Process;
 
-use BitWasp\PinEntry\Response;
-
 interface ProcessInterface
 {
     /**
@@ -15,6 +13,6 @@ interface ProcessInterface
      * @return int
      */
     public function send(string $data);
-    public function recv(): Response;
+    public function recv(): string;
     public function close(): bool;
 }

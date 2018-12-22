@@ -33,5 +33,6 @@ class SixDigitPinValidator implements PinValidatorInterface
 }
 
 $validator = new SixDigitPinValidator();
+echo "call getpin\n";
 $pin = $pinEntry->getPin($request, $validator);
 echo "got pin {$pin}\n";

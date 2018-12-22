@@ -24,7 +24,7 @@ class DebugDecorator implements ProcessInterface
         return $this->process->close();
     }
 
-    public function recv(): Response
+    public function recv(): string
     {
         echo sprintf("%s()\n", __METHOD__);
         $recv = $this->process->recv();

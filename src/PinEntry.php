@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BitWasp\PinEntry;
 
+use BitWasp\PinEntry\Assuan\Assuan;
 use BitWasp\PinEntry\Exception\PinEntryException;
 use BitWasp\PinEntry\PinValidation\PinValidatorInterface;
 use BitWasp\PinEntry\Process\ProcessInterface;
@@ -15,12 +16,20 @@ class PinEntry
      */
     private $process;
 
-    public function __construct(ProcessInterface $process) {
+    /**
+     * @var Assuan
+     */
+    private $assuan;
+
+    public function __construct(ProcessInterface $process, Assuan $assuan = null)
+    {
         $response = $process->recv();
-        if ($response->getOkMsg() !== "Pleased to meet you") {
+        if ($response !== "OK Pleased to meet you\n") {
+            var_dump($response);
             throw new PinEntryException("First message from pinentry did not match expected value");
         }
         $this->process = $process;
+        $this->assuan = $assuan ?: new Assuan();
     }
 
     /**
@@ -31,7 +40,7 @@ class PinEntry
     public function setOption(string $key, $value): Response
     {
         $this->process->send(Command::OPTION . " {$key} {$value}\n");
-        $msg = $this->process->recv();
+        $msg = $this->assuan->parseResponse($this->process);
         return $msg;
     }
 
@@ -48,7 +57,7 @@ class PinEntry
     public function getInfo(string $type): string
     {
         $this->process->send(Command::GETINFO . " {$type}\n");
-        $response = $this->process->recv();
+        $response = $this->assuan->parseResponse($this->process);
 
         if (empty($response->getData())) {
             throw new \RuntimeException("expecting info in response");
@@ -61,20 +70,22 @@ class PinEntry
     public function getPin(PinRequest $request, PinValidatorInterface $pinValidator): string
     {
         foreach ($request->getCommands() as $command => $param) {
-            $this->process->send("{$command} {$param}\n");
-            $this->process->recv();
+            echo "send cmd\n";
+            $this->assuan->send($this->process, $command, $param);
+            echo "get response\n";
+            $this->assuan->parseResponse($this->process);
         }
 
         $error = null;
         $pin = '';
         while (!$pinValidator->validate($pin, $error)) {
             if ($pin !== '') {
-                $this->process->send(Command::SETERROR . " {$error}\n");
-                $this->process->recv();
+                $this->assuan->send($this->process, Command::SETERROR, $error);
+                $this->assuan->parseResponse($this->process);
             }
 
-            $this->process->send(Command::GETPIN . "\n");
-            $response = $this->process->recv();
+            $this->assuan->send($this->process, Command::GETPIN);
+            $response = $this->assuan->parseResponse($this->process);
             if (empty($response->getData())) {
                 throw new \RuntimeException("expecting pin in response");
             }
