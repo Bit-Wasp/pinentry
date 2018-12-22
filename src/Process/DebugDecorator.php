@@ -24,15 +24,8 @@ class DebugDecorator implements ProcessInterface
 
     public function recv(): string
     {
+        echo sprintf("%s()\n", __METHOD__);
         $recv = $this->process->recv();
-        return $recv;
-    }
-
-    public function waitFor(string $text)
-    {
-        echo sprintf("%s(%s)\n", __METHOD__, trim($text));
-        $recv = $this->process->waitFor($text);
-        echo sprintf("%s(%s) received\n%s\n", __METHOD__, trim($text), $recv);
         return $recv;
     }
 

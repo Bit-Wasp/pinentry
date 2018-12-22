@@ -7,51 +7,20 @@ namespace BitWasp\PinEntry;
 class PinRequest
 {
     /**
-     * @var string[]|int[]
+     * keyed by the command, here we store a command => param map
+     * @var string[]
      */
     private $commands = [];
 
     /**
-     * @var string[]|int[]
-     */
-    private $options = [];
-
-    public function withOption(string $key, $value)
-    {
-        $this->options[$key] = $value;
-        return $this;
-    }
-
-    public function hasOption(string $key): bool
-    {
-        return array_key_exists($key, $this->options);
-    }
-
-    public function getOption(string $key)
-    {
-        if ($this->hasOption($key)) {
-            return $this->options[$key];
-        }
-        return null;
-    }
-
-    /**
-     * @return string[]|int[]
-     */
-    public function getOptions(): array
-    {
-        return $this->options;
-    }
-
-    /**
-     * @return string[]|int[]
+     * @return string[]
      */
     public function getCommands(): array
     {
         return $this->commands;
     }
 
-    private function withCommand(string $command, $param)
+    private function withCommand(string $command, string $param)
     {
         $this->commands[$command] = $param;
     }
@@ -133,10 +102,6 @@ class PinRequest
         return $this->getCommand(Command::SETREPEAT);
     }
 
-    /**
-     * @param string $repeatError
-     * @return $this
-     */
     public function withRepeatError(string $repeatError)
     {
         $this->withCommand(Command::SETREPEATERROR, $repeatError);
@@ -267,7 +232,7 @@ class PinRequest
 
     public function withTimeout(int $timeout)
     {
-        $this->withCommand(Command::SETTIMEOUT, $timeout);
+        $this->withCommand(Command::SETTIMEOUT, (string) $timeout);
         return $this;
     }
 
