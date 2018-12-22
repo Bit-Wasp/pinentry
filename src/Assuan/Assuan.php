@@ -10,7 +10,7 @@ use BitWasp\PinEntry\Response;
 
 class Assuan
 {
-    public function parseResponse(ProcessInterface $process)
+    public function parseResponse(ProcessInterface $process): Response
     {
         $data = [];
         $statuses = [];

@@ -39,7 +39,7 @@ class PinEntry
      */
     public function setOption(string $key, string $value): Response
     {
-        $this->assuan->send($this->process, Command::OPTION, " {$key} {$value}");
+        $this->assuan->send($this->process, Command::OPTION, "{$key} {$value}");
         $msg = $this->assuan->parseResponse($this->process);
         return $msg;
     }

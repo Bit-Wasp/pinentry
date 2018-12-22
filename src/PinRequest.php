@@ -8,19 +8,19 @@ class PinRequest
 {
     /**
      * keyed by the command, here we store a command => param map
-     * @var string[]|int[]
+     * @var string[]
      */
     private $commands = [];
 
     /**
-     * @return string[]|int[]
+     * @return string[]
      */
     public function getCommands(): array
     {
         return $this->commands;
     }
 
-    private function withCommand(string $command, $param)
+    private function withCommand(string $command, string $param)
     {
         $this->commands[$command] = $param;
     }
@@ -232,7 +232,7 @@ class PinRequest
 
     public function withTimeout(int $timeout)
     {
-        $this->withCommand(Command::SETTIMEOUT, $timeout);
+        $this->withCommand(Command::SETTIMEOUT, (string) $timeout);
         return $this;
     }
 

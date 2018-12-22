@@ -61,7 +61,11 @@ class Process implements ProcessInterface
 
     public function getStatus(): array
     {
-        return proc_get_status($this->process);
+        $status = proc_get_status($this->process);
+        if (false === $status) {
+            throw new \RuntimeException("Failed to get status information about process");
+        }
+        return $status;
     }
 
     public function send(string $data)
