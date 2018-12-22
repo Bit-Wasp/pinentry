@@ -18,9 +18,7 @@ class Assuan
         $okMsg = null;
 
         for (;;) {
-            echo "call now\n";
             $buffer = $process->recv();
-            var_dump("BUFFER", $buffer);
             foreach (explode("\n", $buffer) as $piece) {
                 if (substr($piece, 0, 4) === "ERR ") {
                     $c = explode(" ", $piece, 3);
@@ -50,10 +48,6 @@ class Assuan
 
     public function send(ProcessInterface $process, string $command, string $params = null)
     {
-        $process->send(sprintf(
-            "%s%s",
-            $command,
-            $params ? " {$params}" : ""
-        ));
+        $process->send(sprintf("%s%s\n", $command, $params ? " {$params}" : ""));
     }
 }

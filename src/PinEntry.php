@@ -25,7 +25,6 @@ class PinEntry
     {
         $response = $process->recv();
         if ($response !== "OK Pleased to meet you\n") {
-            var_dump($response);
             throw new PinEntryException("First message from pinentry did not match expected value");
         }
         $this->process = $process;
@@ -34,12 +33,13 @@ class PinEntry
 
     /**
      * @param string $key
-     * @param int|string $value
-     * @return mixed
+     * @param string $value
+     * @return Response
+     * @throws Exception\RemotePinEntryException
      */
-    public function setOption(string $key, $value): Response
+    public function setOption(string $key, string $value): Response
     {
-        $this->process->send(Command::OPTION . " {$key} {$value}\n");
+        $this->assuan->send($this->process, Command::OPTION, " {$key} {$value}");
         $msg = $this->assuan->parseResponse($this->process);
         return $msg;
     }
@@ -70,9 +70,7 @@ class PinEntry
     public function getPin(PinRequest $request, PinValidatorInterface $pinValidator): string
     {
         foreach ($request->getCommands() as $command => $param) {
-            echo "send cmd\n";
             $this->assuan->send($this->process, $command, $param);
-            echo "get response\n";
             $this->assuan->parseResponse($this->process);
         }
 

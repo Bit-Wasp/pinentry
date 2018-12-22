@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace BitWasp\PinEntry\Process;
 
-use BitWasp\PinEntry\Response;
-
 class DebugDecorator implements ProcessInterface
 {
     /**

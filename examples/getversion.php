@@ -1,8 +1,8 @@
 <?php
-require "vendor/autoload.php";
+require __DIR__ . "/../vendor/autoload.php";
 use BitWasp\PinEntry\PinEntry;
-use BitWasp\PinEntry\PinRequest;
+use BitWasp\PinEntry\Process\Process;
 
-$pinEntry = new PinEntry("/usr/bin/pinentry");
+$pinEntry = new PinEntry(new Process("/usr/bin/pinentry"));
 $pin = $pinEntry->getInfo("version");
 echo "got pin {$pin}\n";

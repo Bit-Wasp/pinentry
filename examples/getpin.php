@@ -2,7 +2,6 @@
 declare(strict_types=1);
 require __DIR__ . "/../vendor/autoload.php";
 use BitWasp\PinEntry\PinEntry;
-use BitWasp\PinEntry\PinValidation\PinValidationResultInterface;
 use BitWasp\PinEntry\PinValidation\PinValidatorInterface;
 use BitWasp\PinEntry\Process\DebugDecorator;
 use BitWasp\PinEntry\Process\Process;
